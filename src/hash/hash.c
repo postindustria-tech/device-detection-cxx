@@ -134,6 +134,22 @@ typedef struct state_with_exception_t {
 	Exception *exception; /* Pointer to the exception structure */
 } stateWithException;
 
+typedef struct detection_state_hash_advance_config_t {
+    uint32_t power; /* Current power being used */
+    byte nodeLength; /* Node hash length */
+    const char *targetUserAgent; /**< Pointer to the string containing the
+                                  User-Agent for processing */
+    int targetUserAgentLength; /**< Number of characters in the target
+                                User-Agent */
+} detection_state_hash_advance_config;
+
+typedef struct detection_state_hash_data_t {
+    uint32_t hash; /* Current hash value */
+    int currentIndex; /* Current index */
+    int firstIndex; /* First index to consider */
+    int lastIndex; /* Last index to consider */
+} detection_state_hash_data;
+
 typedef struct detection_state_t {
 	ResultHash *result; /* The detection result structure to return */
 	DataSetHash *dataSet; /* Data set used for the match operation */
@@ -143,12 +159,9 @@ typedef struct detection_state_t {
 	int drift; /* Drift of the matched hash which has the largest drift */
 	int iterations; /* The number of nodes evaluated before getting a result */
 	Item node; /* Handle to the current node being inspected */
-	uint32_t power; /* Current power being used */
-	uint32_t hash; /* Current hash value */
-	int currentIndex; /* Current index */
-	int firstIndex; /* First index to consider */
-	int lastIndex; /* Last index to consider */
-	uint32_t profileOffset; /* The profile offset found as the result of 
+    detection_state_hash_advance_config hashAdvanceData; /* Immutable data used to advance the hash */
+    detection_state_hash_data hashData; /* Data mutated during `advanceHash` */
+	uint32_t profileOffset; /* The profile offset found as the result of
 							searching a graph */
 	int currentDepth; /* The depth in the graph of the current node bwing
 					  evaluated */
@@ -381,16 +394,16 @@ GraphNodeHash* getMatchingHashFromListNodeWithinDifference(
 	detectionState *state) {
 	uint32_t difference;
 	GraphNodeHash *nodeHash = NULL;
-	uint32_t originalHashCode = state->hash;
+	uint32_t originalHashCode = state->hashData.hash;
 
 	for (difference = 0;
 		(int)difference <= state->allowedDifference && nodeHash == NULL;
 		difference++) {
-		state->hash = originalHashCode + difference;
-		nodeHash = GraphGetMatchingHashFromListNode(NODE(state), state->hash);
+		state->hashData.hash = originalHashCode + difference;
+		nodeHash = GraphGetMatchingHashFromListNode(NODE(state), state->hashData.hash);
 		if (nodeHash == NULL) {
-			state->hash = originalHashCode - difference;
-			nodeHash = GraphGetMatchingHashFromListNode(NODE(state), state->hash);
+			state->hashData.hash = originalHashCode - difference;
+			nodeHash = GraphGetMatchingHashFromListNode(NODE(state), state->hashData.hash);
 		}
 	}
 
@@ -399,7 +412,7 @@ GraphNodeHash* getMatchingHashFromListNodeWithinDifference(
 		// zero.
 		state->difference += difference - 1;
 	}
-	state->hash = originalHashCode;
+	state->hashData.hash = originalHashCode;
 
 	return nodeHash;
 }
@@ -412,13 +425,13 @@ GraphNodeHash* getMatchingHashFromListNodeWithinDifference(
  * the matched User-Agent is not needed.
  * @param match
  */
-static void updateMatchedUserAgent(detectionState *state) {
+static void updateMatchedUserAgent(detectionState * const state) {
 	int i, nodeLength, end;
 	if (state->result->b.matchedUserAgent != NULL) {
-		nodeLength = state->currentIndex + NODE(state)->length;
+		nodeLength = state->hashData.currentIndex + NODE(state)->length;
 		end = nodeLength < state->result->b.matchedUserAgentLength ?
 			nodeLength : state->result->b.matchedUserAgentLength;
-		for (i = state->currentIndex; i < end; i++) {
+		for (i = state->hashData.currentIndex; i < end; i++) {
 			state->result->b.matchedUserAgent[i] = state->result->b.targetUserAgent[i];
 		}
 	}
@@ -427,9 +440,9 @@ static void updateMatchedUserAgent(detectionState *state) {
 static void traceRoute(detectionState *state, GraphNodeHash* hash) {
 	if (state->dataSet->config.traceRoute == true) {
 		GraphTraceNode* node = GraphTraceCreate(NULL);
-		node->index = MAX(state->currentIndex, state->firstIndex);
-		node->firstIndex = state->firstIndex;
-		node->lastIndex = state->lastIndex;
+		node->index = MAX(state->hashData.currentIndex, state->hashData.firstIndex);
+		node->firstIndex = state->hashData.firstIndex;
+		node->lastIndex = state->hashData.lastIndex;
 		node->length = NODE(state)->length;
 		if (hash != NULL) {
 			node->hashCode = hash->hashCode;
@@ -462,8 +475,8 @@ static void setNextNode(detectionState *state, int32_t offset) {
 
 		// Set the first and last indexes.
 		if (node != NULL && EXCEPTION_OKAY) {
-			state->firstIndex += node->firstIndex;
-			state->lastIndex += node->lastIndex;
+			state->hashData.firstIndex += node->firstIndex;
+			state->hashData.lastIndex += node->lastIndex;
 		}
 	}
 	else if (offset <= 0) {
@@ -503,23 +516,26 @@ static void setNextNode(detectionState *state, int32_t offset) {
  * @return true if the hash can be calculated as there are characters remaining
  * otherwise false
  */
-static bool setInitialHash(detectionState *state) {
+static bool setInitialHash(detectionState * const state) {
 	bool result = false;
 	int i;
-	state->hash = 0;
+	state->hashData.hash = 0;
 	// Hash over the whole length using:
 	// h[i] = (c[i]*p^(L-1)) + (c[i+1]*p^(L-2)) ... + (c[i+L]*p^(0))
-	if (state->firstIndex + NODE(state)->length <= state->result->b.targetUserAgentLength) {
-		state->power = POWERS[NODE(state)->length];
-		for (i = state->firstIndex;
-			i < state->firstIndex + NODE(state)->length;
+    const byte nodeLength = (state->hashAdvanceData.nodeLength = NODE(state)->length);
+    state->hashAdvanceData.targetUserAgent = state->result->b.targetUserAgent;
+    state->hashAdvanceData.targetUserAgentLength = state->result->b.targetUserAgentLength;
+	if (state->hashData.firstIndex + nodeLength <= state->result->b.targetUserAgentLength) {
+		state->hashAdvanceData.power = POWERS[nodeLength];
+		for (i = state->hashData.firstIndex;
+			i < state->hashData.firstIndex + nodeLength;
 			i++) {
 			// Increment the powers of the prime coefficients.
-			state->hash *= RK_PRIME;
+			state->hashData.hash *= RK_PRIME;
 			// Add the next character to the right.
-			state->hash += state->result->b.targetUserAgent[i];
+			state->hashData.hash += state->result->b.targetUserAgent[i];
 		}
-		state->currentIndex = state->firstIndex;
+		state->hashData.currentIndex = state->hashData.firstIndex;
 		result = true;
 	}
 	return result;
@@ -552,27 +568,28 @@ static bool setInitialHash(detectionState *state) {
  * @param match
  * @return true if the hash and index were advanced, otherwise false
  */
-static int advanceHash(detectionState *state) {
+static int advanceHash(detection_state_hash_data * const hashData,
+                       const detection_state_hash_advance_config advanceConfig)
+{
 	int result = 0;
 	int nextAddIndex;
 	// Roll the hash on by one character using:
 	// h[n] = p*h[n-1] - c[n-1]*p^(L) + c[i+L]
-	if (state->currentIndex < state->lastIndex) {
-		nextAddIndex = state->currentIndex + NODE(state)->length;
-		if (nextAddIndex < state->result->b.targetUserAgentLength) {
+	if (hashData->currentIndex < hashData->lastIndex) {
+		nextAddIndex = hashData->currentIndex + advanceConfig.nodeLength;
+		if (nextAddIndex < advanceConfig.targetUserAgentLength) {
 			// Increment the powers of the prime coefficients.
 			// p*h[n-1]
-			state->hash *= RK_PRIME;
+			hashData->hash *= RK_PRIME;
 			// Add the next character to the right.
 			// + c[i+L]
-			state->hash += state->result->b.targetUserAgent[nextAddIndex];
+			hashData->hash += advanceConfig.targetUserAgent[nextAddIndex];
 			// Remove the character that has dropped off the left.
 			// - c[n-1]*p^(L)
-			state->hash -= (state->power *
-				state->result->b.targetUserAgent[state->currentIndex]);
+			hashData->hash -= (advanceConfig.power * advanceConfig.targetUserAgent[hashData->currentIndex]);
 			// Increment the current index to the start index of the hash
 			// which was just calculated.
-			state->currentIndex++;
+            hashData->currentIndex++;
 			result = 1;
 		}
 	}
@@ -583,14 +600,14 @@ static int advanceHash(detectionState *state) {
  * Extend the search range by the size defined by the drift parameter.
  * @param match to extend the range in.
  */
-static void applyDrift(detectionState *state) {
-	state->firstIndex =
-		state->firstIndex >= state->allowedDrift ?
-		state->firstIndex - state->allowedDrift :
+static void applyDrift(detectionState * const state) {
+	state->hashData.firstIndex =
+		state->hashData.firstIndex >= state->allowedDrift ?
+		state->hashData.firstIndex - state->allowedDrift :
 		0;
-	state->lastIndex =
-		state->lastIndex + state->allowedDrift < state->result->b.targetUserAgentLength ?
-		state->lastIndex + state->allowedDrift :
+	state->hashData.lastIndex =
+		state->hashData.lastIndex + state->allowedDrift < state->result->b.targetUserAgentLength ?
+		state->hashData.lastIndex + state->allowedDrift :
 		state->result->b.targetUserAgentLength - 1;
 }
 
@@ -600,10 +617,10 @@ static void applyDrift(detectionState *state) {
  * device index are updated in the match structure.
  * @param match
  */
-static void evaluateListNode(detectionState *state) {
+static void evaluateListNode(detectionState * const state) {
 	GraphNodeHash *nodeHash = NULL;
-	int initialFirstIndex = state->firstIndex;
-	int initialLastIndex = state->lastIndex;
+	int initialFirstIndex = state->hashData.firstIndex;
+	int initialLastIndex = state->hashData.lastIndex;
 
 	if (state->currentDepth >= state->breakDepth &&
 		state->allowedDifference > 0 &&
@@ -616,7 +633,7 @@ static void evaluateListNode(detectionState *state) {
 			do {
 				nodeHash =
 					getMatchingHashFromListNodeWithinDifference(state);
-			} while (nodeHash == NULL && advanceHash(state));
+			} while (nodeHash == NULL && advanceHash(&(state->hashData), state->hashAdvanceData));
 			if (nodeHash != NULL) {
 				// A match was found within the difference and drift
 				// tolerances, so update the drift. The difference has been
@@ -624,9 +641,9 @@ static void evaluateListNode(detectionState *state) {
 				// to update again here.
 				state->drift = MAX(
 					state->drift,
-					state->currentIndex < initialFirstIndex ?
-					initialFirstIndex - state->currentIndex :
-					state->currentIndex - initialLastIndex);
+					state->hashData.currentIndex < initialFirstIndex ?
+					initialFirstIndex - state->hashData.currentIndex :
+					state->hashData.currentIndex - initialLastIndex);
 			}
 		}
 	}
@@ -639,7 +656,7 @@ static void evaluateListNode(detectionState *state) {
 			do {
 				nodeHash =
 					getMatchingHashFromListNodeWithinDifference(state);
-			} while (nodeHash == NULL && advanceHash(state));
+			} while (nodeHash == NULL && advanceHash(&(state->hashData), state->hashAdvanceData));
 		}
 	}
 	else if (state->currentDepth >= state->breakDepth &&
@@ -652,16 +669,16 @@ static void evaluateListNode(detectionState *state) {
 			do {
 				nodeHash = GraphGetMatchingHashFromListNode(
 					NODE(state),
-					state->hash);
-			} while (nodeHash == NULL && advanceHash(state));
+					state->hashData.hash);
+			} while (nodeHash == NULL && advanceHash(&(state->hashData), state->hashAdvanceData));
 			if (nodeHash != NULL) {
 				// A match was found within the drift tolerance, so update
 				// the drift.
 				state->drift = MAX(
 					state->drift,
-					state->currentIndex < initialFirstIndex ?
-					initialFirstIndex - state->currentIndex :
-					state->currentIndex - initialLastIndex);
+					state->hashData.currentIndex < initialFirstIndex ?
+					initialFirstIndex - state->hashData.currentIndex :
+					state->hashData.currentIndex - initialLastIndex);
 			}
 		}
 	}
@@ -670,15 +687,15 @@ static void evaluateListNode(detectionState *state) {
 		if (setInitialHash(state)) {
 			// Loop between the first and last indexes checking the hash values.
 			do {
-				nodeHash = GraphGetMatchingHashFromListNode(NODE(state), state->hash);
-			} while (nodeHash == NULL && advanceHash(state));
+				nodeHash = GraphGetMatchingHashFromListNode(NODE(state), state->hashData.hash);
+			} while (nodeHash == NULL && advanceHash(&(state->hashData), state->hashAdvanceData));
 		}
 	}
 	
 	// Reset the first and last indexes as they may have been changed by the
 	// drift option.
-	state->firstIndex = initialFirstIndex;
-	state->lastIndex = initialLastIndex;
+	state->hashData.firstIndex = initialFirstIndex;
+	state->hashData.lastIndex = initialLastIndex;
 
 
 	if (nodeHash != NULL) {
@@ -703,11 +720,11 @@ static void evaluateListNode(detectionState *state) {
  * device index are updated in the match structure.
  * @param match
  */
-static void evaluateBinaryNode(detectionState *state) {
+static void evaluateBinaryNode(detectionState * const state) {
 	uint32_t difference, currentDifference;
 	GraphNodeHash *hashes = HASHES(state);
-	int initialFirstIndex = state->firstIndex;
-	int initialLastIndex = state->lastIndex;
+	int initialFirstIndex = state->hashData.firstIndex;
+	int initialLastIndex = state->hashData.lastIndex;
 	bool found = false;
 	if (state->currentDepth >= state->breakDepth &&
 		state->allowedDrift > 0 &&
@@ -717,9 +734,9 @@ static void evaluateBinaryNode(detectionState *state) {
 		// features are enabled, so search again with both tolerances.
 		// Note the drift has already been applied to the match structure.
 		if (setInitialHash(state)) {
-			difference = abs((int)(state->hash - hashes->hashCode));
-			while (advanceHash(state)) {
-				currentDifference = abs((int)(state->hash - hashes->hashCode));
+			difference = abs((int)(state->hashData.hash - hashes->hashCode));
+			while (advanceHash(&(state->hashData), state->hashAdvanceData)) {
+				currentDifference = abs((int)(state->hashData.hash - hashes->hashCode));
 				if (currentDifference < difference) {
 					difference = currentDifference;
 				}
@@ -729,15 +746,15 @@ static void evaluateBinaryNode(detectionState *state) {
 				// tolerances, so update the difference and drift, and set the
 				// found flag.
 				state->difference += difference;
-				if (state->currentIndex < initialFirstIndex) {
+				if (state->hashData.currentIndex < initialFirstIndex) {
 					state->drift = MAX(
 						state->drift,
-						initialFirstIndex - state->currentIndex);
+						initialFirstIndex - state->hashData.currentIndex);
 				}
-				else if (state->currentIndex > initialLastIndex) {
+				else if (state->hashData.currentIndex > initialLastIndex) {
 					state->drift = MAX(
 						state->drift,
-						state->currentIndex - initialLastIndex);
+						state->hashData.currentIndex - initialLastIndex);
 				}
 				found = true;
 			}
@@ -749,9 +766,9 @@ static void evaluateBinaryNode(detectionState *state) {
 		// A match was not found, and the difference feature is enabled, so
 		// search again allowing for the difference tolerance.
 		if (setInitialHash(state)) {
-			difference = abs((int)(state->hash - hashes->hashCode));
-			while (advanceHash(state)) {
-				currentDifference = abs((int)(state->hash - hashes->hashCode));
+			difference = abs((int)(state->hashData.hash - hashes->hashCode));
+			while (advanceHash(&(state->hashData), state->hashAdvanceData)) {
+				currentDifference = abs((int)(state->hashData.hash - hashes->hashCode));
 				if (currentDifference < difference) {
 					difference = currentDifference;
 				}
@@ -771,16 +788,16 @@ static void evaluateBinaryNode(detectionState *state) {
 		// search again in the extended range defined by the drift.
 		applyDrift(state);
 		if (setInitialHash(state)) {
-			while (state->hash != hashes->hashCode && advanceHash(state)) {
+			while (state->hashData.hash != hashes->hashCode && advanceHash(&(state->hashData), state->hashAdvanceData)) {
 			}
-			if (state->hash == hashes->hashCode) {
+			if (state->hashData.hash == hashes->hashCode) {
 				// A match was found within the drift tolerance, so update the
 				// drift and set the found flag.
 				state->drift = MAX(
 					state->drift,
-					state->currentIndex < initialFirstIndex ?
-					initialFirstIndex - state->currentIndex :
-					state->currentIndex - initialLastIndex);
+					state->hashData.currentIndex < initialFirstIndex ?
+					initialFirstIndex - state->hashData.currentIndex :
+					state->hashData.currentIndex - initialLastIndex);
 				found = true;
 			}
 		}
@@ -789,18 +806,18 @@ static void evaluateBinaryNode(detectionState *state) {
 		if (setInitialHash(state)) {
 			// Keep rolling the hash until the hash is found or the last index is
 			// reached and there is no possibility of finding the hash value.
-			while (state->hash != hashes->hashCode && advanceHash(state)) {
+			while (state->hashData.hash != hashes->hashCode && advanceHash(&(state->hashData), state->hashAdvanceData)) {
 			}
 		}
-		found = state->hash == hashes->hashCode;
+		found = state->hashData.hash == hashes->hashCode;
 	}
 	
 	
 
 	// Reset the first and last indexes as they may have been changed by the
 	// drift option.
-	state->firstIndex = initialFirstIndex;
-	state->lastIndex = initialLastIndex;
+	state->hashData.firstIndex = initialFirstIndex;
+	state->hashData.lastIndex = initialLastIndex;
 
 	if (found == true) {
 		// A match occurred and the hash value was found. Use the offset
@@ -842,8 +859,8 @@ static bool processFromRoot(
 	}
 	else {
 		// Set the default flags and indexes.
-		state->firstIndex = NODE(state)->firstIndex;
-		state->lastIndex = NODE(state)->lastIndex;
+		state->hashData.firstIndex = NODE(state)->firstIndex;
+		state->hashData.lastIndex = NODE(state)->lastIndex;
 		state->complete = false;
 	}
 
