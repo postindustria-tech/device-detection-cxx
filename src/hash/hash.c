@@ -630,10 +630,13 @@ static void evaluateListNode(detectionState * const state) {
 		// features are enabled, so search again with both tolerances.
 		// Note the drift has already been applied to the match structure.
 		if (setInitialHash(state)) {
+            detection_state_hash_data * const hashData = &(state->hashData);
+            const detection_state_hash_advance_config hashAdvanceData = state->hashAdvanceData;
+            
 			do {
 				nodeHash =
 					getMatchingHashFromListNodeWithinDifference(state);
-			} while (nodeHash == NULL && advanceHash(&(state->hashData), state->hashAdvanceData));
+			} while (nodeHash == NULL && advanceHash(hashData, hashAdvanceData));
 			if (nodeHash != NULL) {
 				// A match was found within the difference and drift
 				// tolerances, so update the drift. The difference has been
@@ -653,10 +656,13 @@ static void evaluateListNode(detectionState * const state) {
 		// A match was not found, and the difference feature is enabled, so
 		// search again allowing for the difference tolerance.
 		if (setInitialHash(state)) {
+            detection_state_hash_data * const hashData = &(state->hashData);
+            const detection_state_hash_advance_config hashAdvanceData = state->hashAdvanceData;
+            
 			do {
 				nodeHash =
 					getMatchingHashFromListNodeWithinDifference(state);
-			} while (nodeHash == NULL && advanceHash(&(state->hashData), state->hashAdvanceData));
+			} while (nodeHash == NULL && advanceHash(hashData, hashAdvanceData));
 		}
 	}
 	else if (state->currentDepth >= state->breakDepth &&
@@ -666,11 +672,14 @@ static void evaluateListNode(detectionState * const state) {
 		// search again in the extended range defined by the drift.
 		applyDrift(state);
 		if (setInitialHash(state)) {
+            detection_state_hash_data * const hashData = &(state->hashData);
+            const detection_state_hash_advance_config hashAdvanceData = state->hashAdvanceData;
+            
 			do {
 				nodeHash = GraphGetMatchingHashFromListNode(
 					NODE(state),
 					state->hashData.hash);
-			} while (nodeHash == NULL && advanceHash(&(state->hashData), state->hashAdvanceData));
+			} while (nodeHash == NULL && advanceHash(hashData, hashAdvanceData));
 			if (nodeHash != NULL) {
 				// A match was found within the drift tolerance, so update
 				// the drift.
@@ -685,10 +694,13 @@ static void evaluateListNode(detectionState * const state) {
 	else {
 		// Set the match structure with the initial hash value.
 		if (setInitialHash(state)) {
+            detection_state_hash_data * const hashData = &(state->hashData);
+            const detection_state_hash_advance_config hashAdvanceData = state->hashAdvanceData;
+            
 			// Loop between the first and last indexes checking the hash values.
 			do {
 				nodeHash = GraphGetMatchingHashFromListNode(NODE(state), state->hashData.hash);
-			} while (nodeHash == NULL && advanceHash(&(state->hashData), state->hashAdvanceData));
+			} while (nodeHash == NULL && advanceHash(hashData, hashAdvanceData));
 		}
 	}
 	
@@ -734,8 +746,11 @@ static void evaluateBinaryNode(detectionState * const state) {
 		// features are enabled, so search again with both tolerances.
 		// Note the drift has already been applied to the match structure.
 		if (setInitialHash(state)) {
+            detection_state_hash_data * const hashData = &(state->hashData);
+            const detection_state_hash_advance_config hashAdvanceData = state->hashAdvanceData;
+            
 			difference = abs((int)(state->hashData.hash - hashes->hashCode));
-			while (advanceHash(&(state->hashData), state->hashAdvanceData)) {
+			while (advanceHash(hashData, hashAdvanceData)) {
 				currentDifference = abs((int)(state->hashData.hash - hashes->hashCode));
 				if (currentDifference < difference) {
 					difference = currentDifference;
@@ -766,8 +781,11 @@ static void evaluateBinaryNode(detectionState * const state) {
 		// A match was not found, and the difference feature is enabled, so
 		// search again allowing for the difference tolerance.
 		if (setInitialHash(state)) {
+            detection_state_hash_data * const hashData = &(state->hashData);
+            const detection_state_hash_advance_config hashAdvanceData = state->hashAdvanceData;
+            
 			difference = abs((int)(state->hashData.hash - hashes->hashCode));
-			while (advanceHash(&(state->hashData), state->hashAdvanceData)) {
+			while (advanceHash(hashData, hashAdvanceData)) {
 				currentDifference = abs((int)(state->hashData.hash - hashes->hashCode));
 				if (currentDifference < difference) {
 					difference = currentDifference;
@@ -788,7 +806,10 @@ static void evaluateBinaryNode(detectionState * const state) {
 		// search again in the extended range defined by the drift.
 		applyDrift(state);
 		if (setInitialHash(state)) {
-			while (state->hashData.hash != hashes->hashCode && advanceHash(&(state->hashData), state->hashAdvanceData)) {
+            detection_state_hash_data * const hashData = &(state->hashData);
+            const detection_state_hash_advance_config hashAdvanceData = state->hashAdvanceData;
+            
+			while (state->hashData.hash != hashes->hashCode && advanceHash(hashData, hashAdvanceData)) {
 			}
 			if (state->hashData.hash == hashes->hashCode) {
 				// A match was found within the drift tolerance, so update the
@@ -804,9 +825,12 @@ static void evaluateBinaryNode(detectionState * const state) {
 	}
 	else {
 		if (setInitialHash(state)) {
+            detection_state_hash_data * const hashData = &(state->hashData);
+            const detection_state_hash_advance_config hashAdvanceData = state->hashAdvanceData;
+            
 			// Keep rolling the hash until the hash is found or the last index is
 			// reached and there is no possibility of finding the hash value.
-			while (state->hashData.hash != hashes->hashCode && advanceHash(&(state->hashData), state->hashAdvanceData)) {
+			while (state->hashData.hash != hashes->hashCode && advanceHash(hashData, hashAdvanceData)) {
 			}
 		}
 		found = state->hashData.hash == hashes->hashCode;
