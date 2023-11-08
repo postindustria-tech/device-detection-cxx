@@ -2613,7 +2613,7 @@ static ResultHash* getResultFromResultsWithUniqueId(
 	DataSetHash* dataSet,
 	ResultsHash* results,
 	byte componentIndex,
-	uint32_t uniqueId) {
+	long uniqueId) {
 	for (uint32_t h = 0; h < results->count; h++) {
 		int uniqueHttpHeaderIndex =
 			results->items[h].b.uniqueHttpHeaderIndex;
