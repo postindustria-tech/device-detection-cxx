@@ -228,6 +228,11 @@ fiftyoneDegreesGraphGetMatchingHashFromListNodeTable(
 	fiftyoneDegreesGraphNode *node,
 	uint32_t hash);
 
+EXTERNAL void fiftyoneDegreesGraph_SetupDummy();
+EXTERNAL void fiftyoneDegreesGraph_Setup(pthread_mutex_t *new_mutex,
+                                         long expectedMaxCount);
+EXTERNAL void fiftyoneDegreesGraph_DumpResults();
+
 /**
  * Gets a matching hash record from a node where the hash records are stored
  * as an ordered list by performing a binary search.

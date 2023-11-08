@@ -27,6 +27,7 @@
  // which requires to be included before 'malloc.h'.
 #include "ExampleBase.h"
 #include "../../../src/hash/hash.h"
+#include "../../../src/hash/graph.h"
 #include "../../../src/hash/fiftyone.h"
 
 /**
@@ -445,13 +446,21 @@ void executeBenchmark(
 
 	// run the benchmarks twice, once to warm up any caches
 	fprintf(state->output, "Warming up\n");
+    fiftyoneDegreesGraph_SetupDummy();
 	runTests(state);
+    
+    pthread_mutex_t m;
+    pthread_mutex_init(&m, NULL);
+    fiftyoneDegreesGraph_Setup(&m, 65486326L);
 
 	fprintf(state->output, "Running\n");
 	double executionTime = runTests(state);
 	fprintf(state->output,
 		"Finished - Execution time was %lf ms\n",
 		executionTime);
+    
+    pthread_mutex_destroy(&m);
+    fiftyoneDegreesGraph_DumpResults();
 
 	ResourceManagerFree(&state->manager);
 	Free(state->threads);

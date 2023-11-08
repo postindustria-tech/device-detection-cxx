@@ -261,7 +261,7 @@ int main(int argc, char* argv[]) {
 		fiftyoneDegreesExampleCPPGettingStartedRun);
 
 	// Wait for a character to be pressed.
-	fgetc(stdin);
+	// fgetc(stdin);
 
 	return 0;
 }

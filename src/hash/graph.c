@@ -111,6 +111,64 @@ fiftyoneDegreesGraphNode* fiftyoneDegreesGraphGetNode(
 		exception);
 }
 
+static pthread_mutex_t * sync_mutex;
+static long nextIncIndex;
+static long incsSize;
+static long *incs;
+static long expiredIndex = -1;
+
+void fiftyoneDegreesGraph_SetupDummy() {
+    sync_mutex = NULL;
+}
+void fiftyoneDegreesGraph_Setup(pthread_mutex_t *new_mutex,
+                                long expectedMaxCount)
+{
+    sync_mutex = new_mutex;
+    nextIncIndex = 0;
+    incsSize = expectedMaxCount;
+    incs = malloc(expectedMaxCount * sizeof(incs[0]));
+    for (long mk_i = 0; mk_i < incsSize; ++mk_i) {
+        incs[mk_i] = 0;
+    }
+}
+
+void fiftyoneDegreesGraph_DumpResults() {
+    long maxInc = -1;
+    for (long mk_i = 0; mk_i < incsSize; ) {
+        const long nextInc = incs[mk_i++];
+        if (maxInc < nextInc) {
+            maxInc = nextInc;
+        }
+    }
+    
+    printf("!!! Maximal increment is %ld\n", maxInc);
+    
+    long * const incsRarity = malloc((maxInc + 1) * sizeof(maxInc));
+    
+    for (long mk_j = 0; mk_j <= maxInc; ++mk_j) {
+        incsRarity[mk_j] = 0;
+    }
+    for (long mk_i = 0; mk_i < incsSize && mk_i < nextIncIndex; ++mk_i) {
+        incsRarity[incs[mk_i]]++;
+    }
+    for (long mk_j = 0; mk_j <= maxInc; ++mk_j) {
+        const long nextRarity = incsRarity[mk_j];
+        if (nextRarity > 0) {
+            printf("!!! Rarity of increment %ld = %8ld\n", mk_j, nextRarity);
+        }
+    }
+    
+    if (expiredIndex >= 0) {
+        printf("!!! Out of increments space! %ld\n", expiredIndex);
+    } else {
+        printf("!!! Total calls: %ld\n", nextIncIndex);
+    }
+    printf("!!! \n");
+    
+    free(incsRarity);
+    free(incs);
+}
+
 fiftyoneDegreesGraphNodeHash*
 fiftyoneDegreesGraphGetMatchingHashFromListNodeTable(
 	fiftyoneDegreesGraphNode *node,
@@ -119,6 +177,7 @@ fiftyoneDegreesGraphGetMatchingHashFromListNodeTable(
 	fiftyoneDegreesGraphNodeHash *nodeHashes = (GraphNodeHash*)(node + 1);
 	int index = hash % node->modulo;
 	fiftyoneDegreesGraphNodeHash *nodeHash = &nodeHashes[index];
+    long increments = 0;
 	if (hash == nodeHash->hashCode) {
 		// There is a single record at this index and it matched, so return it.
 		foundHash = nodeHash;
@@ -134,8 +193,22 @@ fiftyoneDegreesGraphGetMatchingHashFromListNodeTable(
 				break;
 			}
 			nodeHash++;
+            increments++;
 		}
 	}
+    
+    if (sync_mutex) {
+        pthread_mutex_lock(sync_mutex);
+        const long incIndex = nextIncIndex;
+        ++nextIncIndex;
+        if (incIndex < incsSize) {
+            incs[incIndex] = increments;
+        } else {
+            expiredIndex = incIndex;
+        }
+        pthread_mutex_unlock(sync_mutex);
+    }
+    
 	return foundHash;
 }
 

@@ -552,7 +552,7 @@ static bool setInitialHash(detectionState *state) {
  * @param match
  * @return true if the hash and index were advanced, otherwise false
  */
-static int advanceHash(detectionState *state) {
+static int advanceHash(detectionState * const state) {
 	int result = 0;
 	int nextAddIndex;
 	// Roll the hash on by one character using:
