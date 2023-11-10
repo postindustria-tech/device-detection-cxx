@@ -390,10 +390,10 @@ static void detectionStateInit(
  * @return fiftyoneDegreesGraphNodeHash* data.ptr to a matching hash record,
  *                                        or null if none match.
  */
-GraphNodeHash* getMatchingHashFromListNodeWithinDifference(
+const GraphNodeHash* getMatchingHashFromListNodeWithinDifference(
 	detectionState *state) {
 	uint32_t difference = 0;
-	GraphNodeHash *nodeHash = NULL;
+	const GraphNodeHash *nodeHash = NULL;
 	uint32_t originalHashCode = state->hashData.hash;
     
     GraphNode * const graphNode = NODE(state);
@@ -435,9 +435,9 @@ static void updateMatchedUserAgent(detectionState * const state) {
 	}
 }
 
-static void traceRoute(detectionState *state, GraphNodeHash* hash) {
+static void traceRoute(const detectionState * const state, const GraphNodeHash* const hash) {
 	if (state->dataSet->config.traceRoute == true) {
-		GraphTraceNode* node = GraphTraceCreate(NULL);
+		GraphTraceNode* const node = GraphTraceCreate(NULL);
 		node->index = MAX(state->hashData.currentIndex, state->hashData.firstIndex);
 		node->firstIndex = state->hashData.firstIndex;
 		node->lastIndex = state->hashData.lastIndex;
@@ -616,7 +616,7 @@ static void applyDrift(detectionState * const state) {
  * @param match
  */
 static void evaluateListNode(detectionState * const state) {
-	GraphNodeHash *nodeHash = NULL;
+	const GraphNodeHash *nodeHash = NULL;
 	int initialFirstIndex = state->hashData.firstIndex;
 	int initialLastIndex = state->hashData.lastIndex;
 

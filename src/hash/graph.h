@@ -223,10 +223,10 @@ EXTERNAL fiftyoneDegreesGraphNode* fiftyoneDegreesGraphGetNode(
  * @return fiftyoneDegreesGraphNodeHash* data.ptr to a matching hash record,
  *                                       or null if none match.
  */
-EXTERNAL fiftyoneDegreesGraphNodeHash*
+EXTERNAL const fiftyoneDegreesGraphNodeHash*
 fiftyoneDegreesGraphGetMatchingHashFromListNodeTable(
-	fiftyoneDegreesGraphNode *node,
-	uint32_t hash);
+	const fiftyoneDegreesGraphNode * const node,
+	const uint32_t hash);
 
 /**
  * Gets a matching hash record from a node where the hash records are stored
@@ -249,7 +249,7 @@ fiftyoneDegreesGraphGetMatchingHashFromListNodeSearch(
  * @return fiftyoneDegreesGraphNodeHash* data.ptr to a matching hash record,
  *                                       or null if none match.
  */
-EXTERNAL fiftyoneDegreesGraphNodeHash*
+EXTERNAL const fiftyoneDegreesGraphNodeHash*
 fiftyoneDegreesGraphGetMatchingHashFromListNode(
 	fiftyoneDegreesGraphNode *node,
 	uint32_t hash);
@@ -275,7 +275,7 @@ fiftyoneDegreesGraphGetMatchingHashFromBinaryNode(
  * @return fiftyoneDegreesGraphNodeHash* data.ptr to a matching hash record,
  *                                       or null if none match.
  */
-EXTERNAL fiftyoneDegreesGraphNodeHash*
+EXTERNAL const fiftyoneDegreesGraphNodeHash*
 fiftyoneDegreesGraphGetMatchingHashFromNode(
 	fiftyoneDegreesGraphNode *node,
 	uint32_t hash);
