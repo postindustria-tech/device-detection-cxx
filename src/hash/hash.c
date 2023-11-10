@@ -395,15 +395,16 @@ GraphNodeHash* getMatchingHashFromListNodeWithinDifference(
 	uint32_t difference;
 	GraphNodeHash *nodeHash = NULL;
 	uint32_t originalHashCode = state->hashData.hash;
-
+    
+    GraphNode * const graphNode = NODE(state);
 	for (difference = 0;
 		(int)difference <= state->allowedDifference && nodeHash == NULL;
 		difference++) {
 		state->hashData.hash = originalHashCode + difference;
-		nodeHash = GraphGetMatchingHashFromListNode(NODE(state), state->hashData.hash);
+		nodeHash = GraphGetMatchingHashFromListNode(graphNode, state->hashData.hash);
 		if (nodeHash == NULL) {
 			state->hashData.hash = originalHashCode - difference;
-			nodeHash = GraphGetMatchingHashFromListNode(NODE(state), state->hashData.hash);
+			nodeHash = GraphGetMatchingHashFromListNode(graphNode, state->hashData.hash);
 		}
 	}
 
@@ -675,9 +676,10 @@ static void evaluateListNode(detectionState * const state) {
             detection_state_hash_data * const hashData = &(state->hashData);
             const detection_state_hash_advance_config hashAdvanceData = state->hashAdvanceData;
             
+            GraphNode * const graphNode = NODE(state);
 			do {
 				nodeHash = GraphGetMatchingHashFromListNode(
-					NODE(state),
+					graphNode,
 					state->hashData.hash);
 			} while (nodeHash == NULL && advanceHash(hashData, hashAdvanceData));
 			if (nodeHash != NULL) {
@@ -696,10 +698,11 @@ static void evaluateListNode(detectionState * const state) {
 		if (setInitialHash(state)) {
             detection_state_hash_data * const hashData = &(state->hashData);
             const detection_state_hash_advance_config hashAdvanceData = state->hashAdvanceData;
+            GraphNode * const graphNode = NODE(state);
             
 			// Loop between the first and last indexes checking the hash values.
 			do {
-				nodeHash = GraphGetMatchingHashFromListNode(NODE(state), state->hashData.hash);
+				nodeHash = GraphGetMatchingHashFromListNode(graphNode, hashData->hash);
 			} while (nodeHash == NULL && advanceHash(hashData, hashAdvanceData));
 		}
 	}
