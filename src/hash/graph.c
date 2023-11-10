@@ -116,7 +116,7 @@ fiftyoneDegreesGraphGetMatchingHashFromListNodeTable(
 	const fiftyoneDegreesGraphNode *const node,
 	const uint32_t hash) {
 	const fiftyoneDegreesGraphNodeHash *foundHash = NULL;
-	fiftyoneDegreesGraphNodeHash * const nodeHashes = (GraphNodeHash*)(node + 1);
+	const fiftyoneDegreesGraphNodeHash * const nodeHashes = (GraphNodeHash*)(node + 1);
 	const int index = hash % node->modulo;
 	const fiftyoneDegreesGraphNodeHash *nodeHash = &nodeHashes[index];
 	if (hash == nodeHash->hashCode) {
@@ -141,8 +141,8 @@ fiftyoneDegreesGraphGetMatchingHashFromListNodeTable(
 
 fiftyoneDegreesGraphNodeHash*
 fiftyoneDegreesGraphGetMatchingHashFromListNodeSearch(
-	fiftyoneDegreesGraphNode *node,
-	uint32_t hash) {
+	const fiftyoneDegreesGraphNode * const node,
+	const uint32_t hash) {
 	fiftyoneDegreesGraphNodeHash *foundHash = NULL;
 	fiftyoneDegreesGraphNodeHash *nodeHashes = (GraphNodeHash*)(node + 1);
 	int32_t lower = 0, upper = node->hashesCount - 1, middle;
@@ -164,8 +164,8 @@ fiftyoneDegreesGraphGetMatchingHashFromListNodeSearch(
 
 const fiftyoneDegreesGraphNodeHash*
 fiftyoneDegreesGraphGetMatchingHashFromListNode(
-	fiftyoneDegreesGraphNode *node,
-	uint32_t hash) {
+	const fiftyoneDegreesGraphNode * const node,
+	const uint32_t hash) {
 	const fiftyoneDegreesGraphNodeHash *foundHash;
 	if (node->modulo == 0) {
 		foundHash = fiftyoneDegreesGraphGetMatchingHashFromListNodeSearch(

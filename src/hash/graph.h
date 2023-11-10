@@ -238,8 +238,8 @@ fiftyoneDegreesGraphGetMatchingHashFromListNodeTable(
  */
 EXTERNAL fiftyoneDegreesGraphNodeHash*
 fiftyoneDegreesGraphGetMatchingHashFromListNodeSearch(
-	fiftyoneDegreesGraphNode *node,
-	uint32_t hash);
+	const fiftyoneDegreesGraphNode * const node,
+	const uint32_t hash);
 
 /**
  * Gets a matching hash record from a node where the node has multiple hash
@@ -251,8 +251,8 @@ fiftyoneDegreesGraphGetMatchingHashFromListNodeSearch(
  */
 EXTERNAL const fiftyoneDegreesGraphNodeHash*
 fiftyoneDegreesGraphGetMatchingHashFromListNode(
-	fiftyoneDegreesGraphNode *node,
-	uint32_t hash);
+	const fiftyoneDegreesGraphNode * const node,
+	const uint32_t hash);
 
 /**
  * Gets a matching hash record from a node where the node a single hash
