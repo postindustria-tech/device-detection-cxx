@@ -392,19 +392,17 @@ static void detectionStateInit(
  */
 GraphNodeHash* getMatchingHashFromListNodeWithinDifference(
 	detectionState *state) {
-	uint32_t difference;
+	uint32_t difference = 0;
 	GraphNodeHash *nodeHash = NULL;
 	uint32_t originalHashCode = state->hashData.hash;
     
     GraphNode * const graphNode = NODE(state);
-	for (difference = 0;
-		(int)difference <= state->allowedDifference && nodeHash == NULL;
+	for (const int maxDifference = state->allowedDifference;
+		((int)difference <= maxDifference) && !nodeHash;
 		difference++) {
-		state->hashData.hash = originalHashCode + difference;
-		nodeHash = GraphGetMatchingHashFromListNode(graphNode, state->hashData.hash);
+		nodeHash = GraphGetMatchingHashFromListNode(graphNode, originalHashCode + difference);
 		if (nodeHash == NULL) {
-			state->hashData.hash = originalHashCode - difference;
-			nodeHash = GraphGetMatchingHashFromListNode(graphNode, state->hashData.hash);
+			nodeHash = GraphGetMatchingHashFromListNode(graphNode, originalHashCode - difference);
 		}
 	}
 
@@ -413,7 +411,6 @@ GraphNodeHash* getMatchingHashFromListNodeWithinDifference(
 		// zero.
 		state->difference += difference - 1;
 	}
-	state->hashData.hash = originalHashCode;
 
 	return nodeHash;
 }
