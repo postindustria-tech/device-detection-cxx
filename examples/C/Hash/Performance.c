@@ -442,16 +442,32 @@ void executeBenchmark(
 	state->availableProperties = dataset->b.b.available->count;
 	fiftyoneDegreesExampleCheckDataFile(dataset);
 	DataSetHashRelease(dataset);
-
+    fiftyoneDegreesHashMaxNodeLength = INT_MAX;
+    fiftyoneDegreesHashMinMatchedChar = 0;
+    fiftyoneDegreesHashMaxMatchedChar = 0xFF;
+    fiftyoneDegreesHashMatchedCharMask = 0;
+    fiftyoneDegreesGraphMaxModulo = INT32_MAX;
 	// run the benchmarks twice, once to warm up any caches
 	fprintf(state->output, "Warming up\n");
 	runTests(state);
 
+    fiftyoneDegreesHashMaxNodeLength = 0;
+    fiftyoneDegreesHashMinMatchedChar = 0xFF;
+    fiftyoneDegreesHashMaxMatchedChar = 0;
+    fiftyoneDegreesHashMatchedCharMask = 0;
+    fiftyoneDegreesGraphMaxModulo = 0;
 	fprintf(state->output, "Running\n");
 	double executionTime = runTests(state);
 	fprintf(state->output,
 		"Finished - Execution time was %lf ms\n",
 		executionTime);
+    fprintf(state->output,
+        "Finished - Max node length: %d, matched chars: %x-%x (used bits: %x), max modulo: %d\n",
+        fiftyoneDegreesHashMaxNodeLength,
+        fiftyoneDegreesHashMinMatchedChar,
+        fiftyoneDegreesHashMaxMatchedChar,
+        fiftyoneDegreesHashMatchedCharMask,
+        fiftyoneDegreesGraphMaxModulo);
 
 	ResourceManagerFree(&state->manager);
 	Free(state->threads);

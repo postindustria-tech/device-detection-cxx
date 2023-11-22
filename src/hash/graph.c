@@ -111,6 +111,8 @@ fiftyoneDegreesGraphNode* fiftyoneDegreesGraphGetNode(
 		exception);
 }
 
+int32_t fiftyoneDegreesGraphMaxModulo;
+
 const fiftyoneDegreesGraphNodeHash*
 fiftyoneDegreesGraphGetMatchingHashFromListNodeTable(
 	const fiftyoneDegreesGraphNode *const node,
@@ -118,6 +120,9 @@ fiftyoneDegreesGraphGetMatchingHashFromListNodeTable(
 	const fiftyoneDegreesGraphNodeHash *foundHash = NULL;
 	const fiftyoneDegreesGraphNodeHash * const nodeHashes = (GraphNodeHash*)(node + 1);
 	const int index = hash % node->modulo;
+    if (fiftyoneDegreesGraphMaxModulo < node->modulo) {
+        fiftyoneDegreesGraphMaxModulo = node->modulo;
+    }
 	const fiftyoneDegreesGraphNodeHash *nodeHash = &nodeHashes[index];
 	if (hash == nodeHash->hashCode) {
 		// There is a single record at this index and it matched, so return it.
