@@ -92,6 +92,16 @@ static unsigned int POWERS[129] = {
 	2890356717U, 4057558529U
 };
 
+static unsigned int PREMULTIPLIED_POWERS[7][128];
+
+void fiftyoneDegreesHashPremuliplyPowers() {
+    for (int i = 0; i < sizeof(PREMULTIPLIED_POWERS) / sizeof(PREMULTIPLIED_POWERS[0]); ++i) {
+        for (int j = 0; j < sizeof(PREMULTIPLIED_POWERS[0]) / sizeof(PREMULTIPLIED_POWERS[0][0]); ++j) {
+            PREMULTIPLIED_POWERS[i][j] = POWERS[i] * j;
+        }
+    }
+}
+
 #define MAX_CONCURRENCY(t) if (config->t.concurrency > concurrency) { \
 concurrency = config->t.concurrency; }
 
@@ -584,7 +594,7 @@ static int advanceHash(detection_state_hash_data * const hashData,
 			hashData->hash += advanceConfig.targetUserAgent[nextAddIndex];
 			// Remove the character that has dropped off the left.
 			// - c[n-1]*p^(L)
-			hashData->hash -= (advanceConfig.power * advanceConfig.targetUserAgent[hashData->currentIndex]);
+            hashData->hash -= PREMULTIPLIED_POWERS[advanceConfig.nodeLength][advanceConfig.targetUserAgent[hashData->currentIndex]];
 			// Increment the current index to the start index of the hash
 			// which was just calculated.
             hashData->currentIndex++;

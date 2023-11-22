@@ -443,6 +443,8 @@ void executeBenchmark(
 	fiftyoneDegreesExampleCheckDataFile(dataset);
 	DataSetHashRelease(dataset);
 
+    fiftyoneDegreesHashPremuliplyPowers();
+    
 	// run the benchmarks twice, once to warm up any caches
 	fprintf(state->output, "Warming up\n");
 	runTests(state);

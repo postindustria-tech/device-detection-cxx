@@ -452,6 +452,8 @@ EXTERNAL_VAR fiftyoneDegreesConfigHash fiftyoneDegreesHashSingleLoadedConfig;
  * EXTERNAL METHODS
  */
 
+void fiftyoneDegreesHashPremuliplyPowers();
+
 /**
  * Gets the total size in bytes which will be allocated when intialising a
  * Hash resource and associated manager with the same parameters. If any of
