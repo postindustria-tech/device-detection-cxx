@@ -430,16 +430,7 @@ static void updateMatchedUserAgent(detectionState * const state) {
 		end = nodeLength < state->result->b.matchedUserAgentLength ?
 			nodeLength : state->result->b.matchedUserAgentLength;
 		for (i = state->hashData.currentIndex; i < end; i++) {
-            state->result->b.matchedUserAgent[i] = state->result->b.targetUserAgent[i];
-            
-            const unsigned char q = ((const unsigned char *)state->result->b.targetUserAgent)[i];
-            if (fiftyoneDegreesHashMinMatchedChar > q) {
-                fiftyoneDegreesHashMinMatchedChar = q;
-            }
-            if (fiftyoneDegreesHashMaxMatchedChar < q) {
-                fiftyoneDegreesHashMaxMatchedChar = q;
-            }
-            fiftyoneDegreesHashMatchedCharMask |= q;
+			state->result->b.matchedUserAgent[i] = state->result->b.targetUserAgent[i];
 		}
 	}
 }
@@ -494,11 +485,6 @@ static void setNextNode(detectionState *state, int32_t offset) {
 	}
 }
 
-int fiftyoneDegreesHashMaxNodeLength;
-unsigned char fiftyoneDegreesHashMinMatchedChar;
-unsigned char fiftyoneDegreesHashMaxMatchedChar;
-unsigned char fiftyoneDegreesHashMatchedCharMask;
-
 /**
  * Works out the initial hash for the first index position and sets the
  * current index to the first index.
@@ -535,9 +521,6 @@ static bool setInitialHash(detectionState * const state) {
 	// Hash over the whole length using:
 	// h[i] = (c[i]*p^(L-1)) + (c[i+1]*p^(L-2)) ... + (c[i+L]*p^(0))
     const byte nodeLength = (state->hashAdvanceData.nodeLength = NODE(state)->length);
-    if (fiftyoneDegreesHashMaxNodeLength < nodeLength) {
-        fiftyoneDegreesHashMaxNodeLength = nodeLength;
-    }
     state->hashAdvanceData.targetUserAgent = state->result->b.targetUserAgent;
     state->hashAdvanceData.targetUserAgentLength = state->result->b.targetUserAgentLength;
 	if (state->hashData.firstIndex + nodeLength <= state->result->b.targetUserAgentLength) {

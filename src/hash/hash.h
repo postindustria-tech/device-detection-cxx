@@ -188,11 +188,6 @@ typedef enum e_fiftyone_degrees_hash_match_method {
 	FIFTYONE_DEGREES_HASH_MATCH_METHODS_LENGTH /**< The length of the enum */
 } fiftyoneDegreesHashMatchMethod;
 
-extern int fiftyoneDegreesHashMaxNodeLength;
-extern unsigned char fiftyoneDegreesHashMinMatchedChar;
-extern unsigned char fiftyoneDegreesHashMaxMatchedChar;
-extern unsigned char fiftyoneDegreesHashMatchedCharMask;
-
 /** Dataset header containing information about the dataset. */
 #pragma pack(push, 1)
 typedef struct fiftyoneDegrees_hash_dataset_header_t {

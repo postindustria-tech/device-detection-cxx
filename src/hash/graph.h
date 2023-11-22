@@ -176,8 +176,6 @@ typedef struct fiftyoneDegrees_graph_node_t {
 } fiftyoneDegreesGraphNode;
 #pragma pack(pop)
 
-extern int32_t fiftyoneDegreesGraphMaxModulo;
-
 #ifndef FIFTYONE_DEGREES_MEMORY_ONLY
 
 /**
