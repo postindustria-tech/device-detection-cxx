@@ -163,6 +163,15 @@ namespace FiftyoneDegrees {
 				 */
 				ResultsHash* process(const char *userAgent) const;
 
+
+				/**
+				 * Processes the DeviceID provided and returns the result.
+				 * @param deviceId to process.
+				 * @return a new results instance with the values for all requested
+				 * properties
+				 */
+				ResultsHash* processDeviceID(const char *deviceId) const;
+
 				/**
 				 * @}
 				 * @name Common::EngineBase Implementation

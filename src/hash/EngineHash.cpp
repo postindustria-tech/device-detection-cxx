@@ -251,6 +251,22 @@ DeviceDetection::Hash::ResultsHash* EngineHash::process(
 	return new ResultsHash(results, manager);
 }
 
+DeviceDetection::Hash::ResultsHash* EngineHash::processDeviceID(
+	const char *deviceId) const {
+	EXCEPTION_CREATE;
+	fiftyoneDegreesResultsHash *results = ResultsHashCreate(
+		manager.get(),
+		1,
+		0);
+	ResultsHashFromDeviceId(
+		results,
+		deviceId,
+		userAgent == nullptr ? 0 : strlen(userAgent),
+		exception);
+	EXCEPTION_THROW;
+	return new ResultsHash(results, manager);
+}
+
 Common::ResultsBase* EngineHash::processBase(
 	Common::EvidenceBase *evidence) const {
 	EXCEPTION_CREATE;
