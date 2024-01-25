@@ -151,6 +151,13 @@ namespace FiftyoneDegrees {
 						<< "\n";
 					cout << "   IsMobile: " <<
 						(*results->getValueAsString("IsMobile")).c_str() << "\n";
+					try {
+						cout << "   javascripthardwareprofile: " <<
+							(*results->getValueAsString("javascripthardwareprofile")).c_str() << "\n";
+					}
+					catch(...) {
+
+					}
 					cout << "   Devide ID: " <<
 						results->getDeviceId() << "\n";
 				}
