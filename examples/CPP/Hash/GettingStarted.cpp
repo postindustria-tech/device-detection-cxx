@@ -22,6 +22,7 @@
  
 #include <string>
 #include <iostream>
+#include <functional>
 // Include ExmapleBase.h before others as it includes Windows 'crtdbg.h'
 // which requires to be included before 'malloc.h'.
 #include "../../C/Hash/ExampleBase.h"
@@ -142,22 +143,20 @@ namespace FiftyoneDegrees {
 					: ExampleBase(dataFilePath, config) {
 				};
 
-				void printResults(ResultsHash* results) {
-					cout << "   PlatformName: " <<
-						(*results->getValueAsString("PlatformName")).c_str()
-						<< "\n";
-					cout << "   PlatformVersion: " <<
-						(*results->getValueAsString("PlatformVersion")).c_str()
-						<< "\n";
-					cout << "   IsMobile: " <<
-						(*results->getValueAsString("IsMobile")).c_str() << "\n";
-					try {
-						cout << "   javascripthardwareprofile: " <<
-							(*results->getValueAsString("javascripthardwareprofile")).c_str() << "\n";
-					}
-					catch(...) {
-
-					}
+				static void printResults(ResultsHash* results) {
+					std::function<void(const char*)> const tryPrintValue = [results](const char* const key) {
+						try {
+							const std::string s = (*results->getValueAsString(key));
+							cout << "   " << key << ": " << s << "\n";
+						}
+						catch (...) {
+							// nop -- skip
+						}
+					};
+					tryPrintValue("PlatformName");
+					tryPrintValue("PlatformVersion");
+					tryPrintValue("IsMobile");
+					tryPrintValue("javascripthardwareprofile");
 					cout << "   Devide ID: " <<
 						results->getDeviceId() << "\n";
 				}
@@ -187,6 +186,7 @@ namespace FiftyoneDegrees {
 						deviceId_mobile = results->getDeviceId();
 						delete results;
 					};
+					std::string deviceId_desktop;
 					{
 						// Carries out a match for a desktop User-Agent.
 						cout << "\n[---]\n";
@@ -197,6 +197,7 @@ namespace FiftyoneDegrees {
 
 						ResultsHash* results = engine->process(evidence);
 						printResults(results);
+						deviceId_desktop = results->getDeviceId();
 						delete results;
 					};
 					{
@@ -279,6 +280,50 @@ namespace FiftyoneDegrees {
 						cout << "  [control platform ID: " << deviceId_mobile << " -- Mobile (no-deviceId)]\n";
 						delete results;
 						delete evidence2;
+					};
+					{
+						std::vector<std::string> const id_sources = {
+							deviceId_mobile,
+							deviceId_desktop,
+							deviceId_hintedHub,
+						};
+						struct {
+							std::stringstream merged;
+							bool isFirst = true;
+						} mergeState;
+						std::function<void(std::string, bool)> const runID = [engine = this->engine, mergeStateRef = &mergeState](const std::string nextID, const bool merge) {
+							// Carries out a match for a platform with invalid device ID.
+							EvidenceDeviceDetection* const evidence2 =
+								new EvidenceDeviceDetection();
+							cout << "\n[---]\n";
+							cout << "Profile IDs: " << nextID << "\n";
+
+							evidence2->operator[]("query.51D_ProfileIds")
+								= nextID;
+
+							ResultsHash* const results = engine->process(evidence2);
+							printResults(results);
+							delete results;
+							delete evidence2;
+							if (merge) {
+								if (mergeStateRef->isFirst) {
+									mergeStateRef->isFirst = false;
+								}
+								else {
+									mergeStateRef->merged << "|";
+								}
+								mergeStateRef->merged << nextID;
+							}
+						};
+						
+						for (auto it = id_sources.begin(); it != id_sources.end(); ++it) {
+							std::istringstream iss(*it);
+							std::string item;
+							while (std::getline(iss, item, '-')) {
+								runID(item, true);
+							}
+						}
+						runID(mergeState.merged.str(), false);
 					};
 
 					// Free the evidence.
