@@ -88,8 +88,11 @@ namespace FiftyoneDegrees {
 				/** Example mobile User-Agent string */
 				static const char* mobileUserAgent;
 
-				/** Example desktop User-Agent string */
+				/** Example desktop User-Agent string (Firefox*) */
 				static const char* desktopUserAgent;
+
+				/** Example desktop User-Agent string (Chrome*) */
+				static const char* desktopUserAgentChrome;
 
 				/** Example UACH Platform value */
 				static const char* uachPlatform;

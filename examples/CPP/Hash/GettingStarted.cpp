@@ -157,6 +157,7 @@ namespace FiftyoneDegrees {
 					tryPrintValue("PlatformVersion");
 					tryPrintValue("IsMobile");
 					tryPrintValue("javascripthardwareprofile");
+					tryPrintValue("javascriptgethighentropyvalues");
 					cout << "   Devide ID: " <<
 						results->getDeviceId() << "\n";
 				}
@@ -199,6 +200,36 @@ namespace FiftyoneDegrees {
 						printResults(results);
 						deviceId_desktop = results->getDeviceId();
 						delete results;
+					};
+					{
+						// Carries out a match for a desktop User-Agent 2.
+						cout << "\n[---]\n";
+						cout << "Desktop User-Agent 2: " <<
+							desktopUserAgentChrome << "\n";
+						evidence->operator[]("header.user-agent")
+							= desktopUserAgentChrome;
+
+						ResultsHash* results = engine->process(evidence);
+						printResults(results);
+						delete results;
+					};
+					{
+						// Carries out a match for a desktop platform 2 based on UACH headers.
+						cout << "\n(+)\n";
+						cout << "UACH Sec-CH-UA-Platform: " <<
+							uachPlatform << "\n";
+						cout << "UACH Sec-CH-UA-Platform-Version: " <<
+							uachPlatformVersion << "\n";
+						evidence->operator[]("header.Sec-CH-UA-Platform")
+							= uachPlatform;
+						evidence->operator[]("header.Sec-CH-UA-Platform-Version")
+							= uachPlatformVersion;
+
+						ResultsHash* results = engine->process(evidence);
+						printResults(results);
+						delete results;
+
+						evidence->clear();
 					};
 					{
 						// Carries out a match for a MediaHub User-Agent.

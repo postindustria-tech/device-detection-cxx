@@ -26,7 +26,7 @@ using namespace FiftyoneDegrees;
 using namespace FiftyoneDegrees::Examples::Hash;
 
 const char *RequiredProperties = 
-	"ScreenPixelsWidth,IsMobile,BrowserName,PlatformName,PlatformVersion,javascripthardwareprofile";
+	"ScreenPixelsWidth,IsMobile,BrowserName,PlatformName,PlatformVersion,javascripthardwareprofile,javascriptgethighentropyvalues";
 
 const char *ExampleBase::mobileUserAgent = (
 	"Mozilla/5.0 (iPhone; CPU iPhone OS 7_1 like Mac OS X) "
@@ -36,6 +36,11 @@ const char *ExampleBase::mobileUserAgent = (
 const char *ExampleBase::desktopUserAgent = (
 	"Mozilla/5.0 (Windows NT 6.3; WOW64; rv:41.0) "
 	"Gecko/20100101 Firefox/41.0");
+
+const char *ExampleBase::desktopUserAgentChrome = (
+	"Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+	"AppleWebKit/537.36 (KHTML, like Gecko) "
+	"Chrome/122.0.0.0 Safari/537.36");
 
 const char *ExampleBase::mediaHubUserAgent = (
 	"Mozilla/5.0 (Linux; Android 4.4.2; X7 Quad Core "
