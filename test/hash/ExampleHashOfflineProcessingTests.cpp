@@ -34,24 +34,38 @@ private:
 		output << ".processed.csv";
 		return output.str();
 	}
+
+	class COutRedirector {
+	private:
+		std::streambuf* _sbuf;
+	public:
+		COutRedirector(const std::shared_ptr<std::stringstream>& _buffer) {
+			_sbuf = std::cout.rdbuf();
+			std::cout.rdbuf(_buffer->rdbuf());
+		}
+		~COutRedirector() {
+			// Revert the capture.
+			std::cout.rdbuf(_sbuf);
+		}
+	};
 public:
 	void run(fiftyoneDegreesConfigHash config) {
 		// Capture stdout for the test.
-		testing::internal::CaptureStdout();
-
-		fiftyoneDegreesOfflineProcessingRun(
-			dataFilePath.c_str(),
-			evidenceFilePath.c_str(),
-			getOutputFilePath().c_str(),
-			"IsMobile,BrowserName,DeviceType",
-			config,
-			stdout);
-		fiftyoneDegreesFileDelete(getOutputFilePath().c_str());
-
-		// Don't print the stdout
-		std::string output = testing::internal::GetCapturedStdout();
-		const char* const fakeString = NULL;
-		EXPECT_NE(output.c_str(), fakeString);
+		auto const ss = std::make_shared<std::stringstream>();
+		{
+			COutRedirector redirector(ss);
+			fiftyoneDegreesOfflineProcessingRun(
+				dataFilePath.c_str(),
+				evidenceFilePath.c_str(),
+				getOutputFilePath().c_str(),
+				"IsMobile,BrowserName,DeviceType",
+				config,
+				stdout);
+			fiftyoneDegreesFileDelete(getOutputFilePath().c_str());
+		}
+		std::string s = ss->str();
+		const char* const fakeString = nullptr;
+		ASSERT_NE(s.c_str(), fakeString);
 	}
 };
 
