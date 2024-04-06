@@ -50,6 +50,7 @@ public:
 
 		// Don't print the stdout
 		std::string output = testing::internal::GetCapturedStdout();
+		EXPECT_NE(output.c_str(), NULL);
 	}
 };
 
