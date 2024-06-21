@@ -357,7 +357,11 @@ typedef struct fiftyone_degrees_result_hash_t {
 	fiftyoneDegreesList values; /**< List of value items when results are
 								fetched */ \
 	fiftyoneDegreesEvidenceKeyValuePairArray* pseudoEvidence; /**< Array of
-															pseudo evidence */
+															pseudo evidence */ \
+    fiftyoneDegreesEvidenceKeyValuePairArray* effectiveEvidence; /**< Array of
+                                                    effective evidence capturing the original evidence and any converted evidence - from which pseudoevidence is formed and actual device detection is executed */ \
+    char *effectiveEvidenceBuffer; /**< Working memory to hold the strings resulting from the potential GHEV / SUA conversion into HTTP headers format */ \
+    size_t effectiveEvidenceBufferLength; /**< Working buffer length */
 
 FIFTYONE_DEGREES_ARRAY_TYPE(
 	fiftyoneDegreesResultHash,
@@ -888,5 +892,20 @@ EXTERNAL char* fiftyoneDegreesHashGetDeviceIdFromResults(
 /**
  * @}
  */
+
+/**
+ * Copies the input evidence into results->effectiveEvidence one by one.
+ * If input evidence array contains either `gethighentropyvalues` (or `51D_gethighentropyvalues` alias) or
+ * `sua` keys, with values containing corresponding JSON string UACH representations the corresponding routine
+ *  is called to convert JSON string representation into a set of HTTP headers.  The produced evidence is added one by one into the
+ *  end of results->effectiveEvidence.  Original `gethighentropyvalues` or `sua` evidence are not copied to the effectiveEvidence.
+ *  The conversion happens only for the first of these values if both are encountered.
+ */
+
+EXTERNAL void fiftyoneDegreesPreprocessEvidence(
+    fiftyoneDegreesResultsHash *results,
+    fiftyoneDegreesEvidenceKeyValuePairArray *evidence,
+    fiftyoneDegreesException *exception);
+
 
 #endif

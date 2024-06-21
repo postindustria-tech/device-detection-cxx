@@ -2359,6 +2359,10 @@ void fiftyoneDegreesResultsHashFromEvidence(
 	results->count = 0;
 
 	do {
+        // Preprocess evidence and create results->effectiveEvidence to work with
+        fiftyoneDegreesPreprocessEvidence(results, evidence, exception);
+        if (EXCEPTION_FAILED) { break; };
+    
 		// Construct the evidence for pseudo header
 		resultsHashFromEvidence_constructEvidenceWithPseudoHeaders(dataSet, evidence, results, exception);
 		if (EXCEPTION_FAILED) { break; };
@@ -2474,6 +2478,17 @@ void fiftyoneDegreesResultsHashFree(
 		Free((void *)results->pseudoEvidence->items[0].originalValue);
 		Free(results->pseudoEvidence);
 	}
+    
+    if (results->effectiveEvidence != NULL) {
+        Free(results->effectiveEvidence);
+        results->effectiveEvidence = NULL;
+    }
+    
+    if (results->effectiveEvidenceBuffer != NULL) {
+        Free(results->effectiveEvidenceBuffer);
+        results->effectiveEvidenceBuffer = NULL;
+    }
+
 	Free(results);
 }
 
@@ -2561,6 +2576,18 @@ fiftyoneDegreesResultsHash* fiftyoneDegreesResultsHashCreate(
 			fiftyoneDegreesResultsHashFree(results);
 			return NULL;
 		}
+        
+        // Initialize effective evidence:
+        // potentially detect up to 6 sec-ch-ua headers from ghev or sua:
+        // sec-ch-ua, sec-ch-ua-mobile, sec-ch-ua-platform,
+        // sec-ch-ua-full-version-list, sec-ch-ua-model, sec-ch-ua-platform-version
+        const size_t clientHintCount = 6;
+        results->effectiveEvidence = EvidenceCreate(userAgentCapacity + clientHintCount);
+        
+        // Create working buffer for coversion of effective evidence
+        // Maybe this operation has to be deferred to actually when we encounter that we need to
+        results->effectiveEvidenceBufferLength = clientHintCount * dataSet->config.b.maxMatchedUserAgentLength;
+        results->effectiveEvidenceBuffer = (char *)Malloc(results->effectiveEvidenceBufferLength);
 
 		// Reset the property and values list ready for first use sized for 
 		// a single value to be returned.
@@ -3493,3 +3520,9 @@ char* fiftyoneDegreesHashGetDeviceIdFromResults(
 	}
 }
 
+EXTERNAL void fiftyoneDegreesPreprocessEvidence(
+    fiftyoneDegreesResultsHash *results,
+    fiftyoneDegreesEvidenceKeyValuePairArray *evidence,
+    fiftyoneDegreesException *exception) {
+    
+}
