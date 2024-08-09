@@ -9,6 +9,6 @@ param (
 ./steps/get-next-package-version.ps1 -RepoName $RepoName -VariableName "GitVersion"
 
 # Set the variable for the caller
-Set-Variable -Name $VariableName -Value $GitVersion.SemVer -Scope Global
+Set-Variable -Name $VariableName -Value $GitVersion.MajorMinorPatch -Scope Global
 
 exit $LASTEXITCODE
