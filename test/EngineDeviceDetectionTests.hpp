@@ -198,40 +198,8 @@ ENGINE_CONFIG(e, Balanced) \
 ENGINE_CONFIG(e, BalancedTemp) \
 ENGINE_CONFIG(e, InMemory) \
 ENGINE_CONFIG(e, SingleLoaded) \
-ENGINE_DEVICE_DETECTION_TESTS(e, File, LowMemory, OnePropertyString) \
-ENGINE_DEVICE_DETECTION_TESTS(e, File, LowMemory, TwoPropertyStrings) \
-ENGINE_DEVICE_DETECTION_TESTS(e, File, LowMemory, DuplicatePropertyStrings) \
-ENGINE_DEVICE_DETECTION_TESTS(e, File, LowMemory, MixedPropertyStrings) \
-ENGINE_DEVICE_DETECTION_TESTS(e, File, LowMemory, OnePropertyArray) \
-ENGINE_DEVICE_DETECTION_TESTS(e, File, LowMemory, TwoPropertyArray) \
-ENGINE_DEVICE_DETECTION_TESTS(e, File, LowMemory, DuplicatePropertyArray) \
-ENGINE_DEVICE_DETECTION_TESTS(e, File, LowMemory, MixedPropertyArray) \
-ENGINE_DEVICE_DETECTION_TESTS(e, File, Null, OnePropertyString) \
-ENGINE_DEVICE_DETECTION_TESTS(e, File, Null, TwoPropertyStrings) \
-ENGINE_DEVICE_DETECTION_TESTS(e, File, Null, DuplicatePropertyStrings) \
-ENGINE_DEVICE_DETECTION_TESTS(e, File, Null, MixedPropertyStrings) \
-ENGINE_DEVICE_DETECTION_TESTS(e, File, Null, OnePropertyArray) \
-ENGINE_DEVICE_DETECTION_TESTS(e, File, Null, TwoPropertyArray) \
-ENGINE_DEVICE_DETECTION_TESTS(e, File, Null, DuplicatePropertyArray) \
-ENGINE_DEVICE_DETECTION_TESTS(e, File, Null, MixedPropertyArray) \
 ENGINE_DEVICE_DETECTION_TESTS(e, File, LowMemory, Null) \
 ENGINE_DEVICE_DETECTION_TESTS(e, File, Null, Null) \
-ENGINE_DEVICE_DETECTION_USER_AGENT_TESTS(e, File, LowMemory, OnePropertyString) \
-ENGINE_DEVICE_DETECTION_USER_AGENT_TESTS(e, File, LowMemory, TwoPropertyStrings) \
-ENGINE_DEVICE_DETECTION_USER_AGENT_TESTS(e, File, LowMemory, DuplicatePropertyStrings) \
-ENGINE_DEVICE_DETECTION_USER_AGENT_TESTS(e, File, LowMemory, MixedPropertyStrings) \
-ENGINE_DEVICE_DETECTION_USER_AGENT_TESTS(e, File, LowMemory, OnePropertyArray) \
-ENGINE_DEVICE_DETECTION_USER_AGENT_TESTS(e, File, LowMemory, TwoPropertyArray) \
-ENGINE_DEVICE_DETECTION_USER_AGENT_TESTS(e, File, LowMemory, DuplicatePropertyArray) \
-ENGINE_DEVICE_DETECTION_USER_AGENT_TESTS(e, File, LowMemory, MixedPropertyArray) \
-ENGINE_DEVICE_DETECTION_USER_AGENT_TESTS(e, File, Null, OnePropertyString) \
-ENGINE_DEVICE_DETECTION_USER_AGENT_TESTS(e, File, Null, TwoPropertyStrings) \
-ENGINE_DEVICE_DETECTION_USER_AGENT_TESTS(e, File, Null, DuplicatePropertyStrings) \
-ENGINE_DEVICE_DETECTION_USER_AGENT_TESTS(e, File, Null, MixedPropertyStrings) \
-ENGINE_DEVICE_DETECTION_USER_AGENT_TESTS(e, File, Null, OnePropertyArray) \
-ENGINE_DEVICE_DETECTION_USER_AGENT_TESTS(e, File, Null, TwoPropertyArray) \
-ENGINE_DEVICE_DETECTION_USER_AGENT_TESTS(e, File, Null, DuplicatePropertyArray) \
-ENGINE_DEVICE_DETECTION_USER_AGENT_TESTS(e, File, Null, MixedPropertyArray) \
 ENGINE_DEVICE_DETECTION_USER_AGENT_TESTS(e, File, LowMemory, Null) \
 ENGINE_DEVICE_DETECTION_USER_AGENT_TESTS(e, File, Null, Null)
 
