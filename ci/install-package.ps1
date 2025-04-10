@@ -7,6 +7,7 @@ $BuildPath = [IO.Path]::Combine($pwd, $RepoName, "build")
 $BinPath = [IO.Path]::Combine($BuildPath, "bin")
 
 mkdir $BuildPath
+unzip -o $PackagePath
 
 # Copy the prebuilt binaries to the build directory
 Copy-Item -Recurse -Path $PackagePath -Destination $BinPath
