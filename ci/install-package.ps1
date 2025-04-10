@@ -6,6 +6,7 @@ $PackagePath = [IO.Path]::Combine($pwd, "package")
 $BuildPath = [IO.Path]::Combine($pwd, $RepoName, "build")
 $BinPath = [IO.Path]::Combine($BuildPath, "bin")
 
+ls
 mkdir $BuildPath
 unzip -o $PackagePath
 
