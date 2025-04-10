@@ -86,6 +86,7 @@
     "Configuration": "Release",
     "Arch": "x64",
     "RunPerformance": true,
+    "PackageRequirement": true
   },
   {
     "Image": "macos-latest",
