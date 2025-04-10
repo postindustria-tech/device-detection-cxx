@@ -2,15 +2,15 @@ param (
     [string]$RepoName
 )
 
+$WorkDir = [IO.Path]::Combine($pwd, $RepoName)
 $PackagePath = [IO.Path]::Combine($pwd, "package")
-$BuildPath = [IO.Path]::Combine($pwd, $RepoName, "build")
+$BuildPath = [IO.Path]::Combine($WorkDir, "build")
 $BinPath = [IO.Path]::Combine($BuildPath, "bin")
 
 mkdir $BuildPath
 
-# Copy the prebuilt binaries to the build directory
-#Copy-Item -Recurse -Path $PackagePath -Destination $BinPath
-Copy-Item -Path $PackagePath/* -Destination $BuildPath -Recurse
+# Copy the prebuilt build dir with binaries and artifacts for tests into workdir
+Copy-Item -Path $PackagePath/* -Destination $WorkDir -Recurse
 
 Write-Output "PackagePath contents:"
 ls $PackagePath
