@@ -6,7 +6,9 @@ $PackagePath = [IO.Path]::Combine($pwd, "package")
 $BuildPath = [IO.Path]::Combine($pwd, $RepoName, "build")
 $BinPath = [IO.Path]::Combine($BuildPath, "bin")
 
+ls /home/runner/work/device-detection-cxx/device-detection-cxx/common
 ls
+ls $PackagePath
 mkdir $BuildPath
 unzip -o $PackagePath
 
