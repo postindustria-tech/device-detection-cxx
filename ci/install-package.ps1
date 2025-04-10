@@ -16,4 +16,7 @@ Write-Output "PackagePath contents:"
 ls $PackagePath
 
 Write-Output "BinPath contents:"
+ls $BuildPath
+
+Write-Output "BinPath contents:"
 ls $BinPath
