@@ -10,7 +10,7 @@ mkdir $BuildPath
 
 # Copy the prebuilt binaries to the build directory
 #Copy-Item -Recurse -Path $PackagePath -Destination $BinPath
-Copy-Item -Path $PackagePath -Destination $BuildPath -Recurse
+Copy-Item -Path $PackagePath/* -Destination $BuildPath -Recurse
 
 Write-Output "PackagePath contents:"
 ls $PackagePath
